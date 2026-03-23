@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tanglin ERT Leave Calendar - Toggle Sample</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+    .wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 6px;
+    }
+    .sub {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+    .legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .ok { background: #dcfce7; color: #166534; }
+    .low { background: #fef3c7; color: #92400e; }
+    .full { background: #fee2e2; color: #991b1b; }
+    .selected { background: #dbeafe; color: #1d4ed8; }
+
+    .summary {
+      font-size: 14px;
+      line-height: 1.5;
+      margin-top: 14px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+    }
+    .status-good {
+      color: #166534;
+      font-weight: 700;
+    }
+    .status-bad {
+      color: #991b1b;
+      font-weight: 700;
+    }
+
+    .nav-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .nav-btn {
+      border: none;
+      background: #111827;
+      color: white;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      min-width: 84px;
+    }
+    .nav-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    .month-window-title {
+      flex: 1;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .month-card {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      background: #fafafa;
+      border: 1px solid #e5e7eb;
+    }
+    .month-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .head {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .head div {
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 700;
+      padding: 4px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .day {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      min-height: 58px;
+      padding: 8px 4px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      background: #fff;
+      cursor: pointer;
+      user-select: none;
+    }
+    .day.muted {
+      background: #f9fafb;
+      color: #9ca3af;
+      cursor: default;
+    }
+    .day small {
+      display: block;
+      margin-top: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .day.range {
+      outline: 2px solid #2563eb;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .btn, .btn-secondary {
+      display: inline-block;
+      text-align: center;
+      padding: 12px 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn {
+      background: #111827;
+      color: white;
+      width: 100%;
+      margin-top: 14px;
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .note {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Tanglin ERT Leave Calendar</h1>
+      <div class="sub">2-month toggle sample • Better mobile UX than long scrolling 12 months</div>
+      <div class="sub">Tap start date, then tap end date. Use Prev / Next to move through the year.</div>
+
+      <div class="legend">
+        <span class="pill ok">Available</span>
+        <span class="pill low">Low</span>
+        <span class="pill full">Full</span>
+        <span class="pill selected">Selected</span>
+      </div>
+
+      <div class="summary" id="summaryBox">
+        Select a date range to check availability.
+        <div class="toolbar">
+          <button class="btn-secondary" id="resetBtn" type="button">Reset selection</button>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="nav-btn" id="prevBtn" type="button">Prev</button>
+        <div class="month-window-title" id="windowTitle">January 2026 • February 2026</div>
+        <button class="nav-btn" id="nextBtn" type="button">Next</button>
+      </div>
+
+      <div id="monthsContainer"></div>
+
+      <a href="#" class="btn">Open Form Submission</a>
+      <div class="note">This toggle version shows 2 months at a time. It still supports cross-month selection inside the visible window and feels much cleaner on mobile.</div>
+    </div>
+  </div>
+
+  <script>
+    function pad(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function keyFromDate(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+    }
+
+    function formatPretty(date) {
+      return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function monthLabel(year, month) {
+      return new Date(year, month, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    }
+
+    function getStatus(slots) {
+      if (slots <= 0) return 'full';
+      if (slots === 1) return 'low';
+      return 'ok';
+    }
+
+    // Quota data loaded from Daily Slots sheet
+    const quotaData = {
+      "2026-01-01": 2,
+      "2026-01-02": 4,
+      "2026-01-03": 2,
+      "2026-01-04": 3,
+      "2026-01-05": 5,
+      "2026-01-06": 4,
+      "2026-01-07": -2,
+      "2026-01-08": 1,
+      "2026-01-09": 1,
+      "2026-01-10": -1,
+      "2026-01-11": 1,
+      "2026-01-12": 2,
+      "2026-01-13": 3,
+      "2026-01-14": 2,
+      "2026-01-15": 3,
+      "2026-01-16": 1,
+      "2026-01-17": 1,
+      "2026-01-18": 2,
+      "2026-01-19": 4,
+      "2026-01-20": 4,
+      "2026-01-21": 5,
+      "2026-01-22": 3,
+      "2026-01-23": 4,
+      "2026-01-24": 4,
+      "2026-01-25": 4,
+      "2026-01-26": 4,
+      "2026-01-27": 4,
+      "2026-01-28": 4,
+      "2026-01-29": 4,
+      "2026-01-30": 5,
+      "2026-01-31": 5,
+      "2026-02-01": 5,
+      "2026-02-02": 6,
+      "2026-02-03": 6,
+      "2026-02-04": 6,
+      "2026-02-05": 6,
+      "2026-02-06": 4,
+      "2026-02-07": 4,
+      "2026-02-08": 4,
+      "2026-02-09": 4,
+      "2026-02-10": 4,
+      "2026-02-11": 5,
+      "2026-02-12": 5,
+      "2026-02-13": 6,
+      "2026-02-14": 6,
+      "2026-02-15": 4,
+      "2026-02-16": 4,
+      "2026-02-17": 4,
+      "2026-02-18": 5,
+      "2026-02-19": 6,
+      "2026-02-20": 6,
+      "2026-02-21": 6,
+      "2026-02-22": 6,
+      "2026-02-23": 6,
+      "2026-02-24": 5,
+      "2026-02-25": 5,
+      "2026-02-26": 4,
+      "2026-02-27": 4,
+      "2026-02-28": 4,
+      "2026-03-01": 4,
+      "2026-03-02": 4,
+      "2026-03-03": 5,
+      "2026-03-04": 5,
+      "2026-03-05": 5,
+      "2026-03-06": 5,
+      "2026-03-07": 4,
+      "2026-03-08": 4,
+      "2026-03-09": 4,
+      "2026-03-10": 4,
+      "2026-03-11": 4,
+      "2026-03-12": 5,
+      "2026-03-13": 4,
+      "2026-03-14": 4,
+      "2026-03-15": 4,
+      "2026-03-16": 4,
+      "2026-03-17": 4,
+      "2026-03-18": 5,
+      "2026-03-19": 5,
+      "2026-03-20": 5,
+      "2026-03-21": 6,
+      "2026-03-22": 6,
+      "2026-03-23": 6,
+      "2026-03-24": 6,
+      "2026-03-25": 6,
+      "2026-03-26": 6,
+      "2026-03-27": 6,
+      "2026-03-28": 6,
+      "2026-03-29": 6,
+      "2026-03-30": 6,
+      "2026-03-31": 6,
+      "2026-04-01": 6,
+      "2026-04-02": 5,
+      "2026-04-03": 5,
+      "2026-04-04": 5,
+      "2026-04-05": 5,
+      "2026-04-06": 5,
+      "2026-04-07": 5,
+      "2026-04-08": 5,
+      "2026-04-09": 5,
+      "2026-04-10": 5,
+      "2026-04-11": 4,
+      "2026-04-12": 4,
+      "2026-04-13": 4,
+      "2026-04-14": 4,
+      "2026-04-15": 4,
+      "2026-04-16": 4,
+      "2026-04-17": 4,
+      "2026-04-18": 4,
+      "2026-04-19": 4,
+      "2026-04-20": 4,
+      "2026-04-21": 4,
+      "2026-04-22": 4,
+      "2026-04-23": 4,
+      "2026-04-24": 6,
+      "2026-04-25": 6,
+      "2026-04-26": 6,
+      "2026-04-27": 6,
+      "2026-04-28": 5,
+      "2026-04-29": 5,
+      "2026-04-30": 5,
+      "2026-05-01": 4,
+      "2026-05-02": 4,
+      "2026-05-03": 4,
+      "2026-05-04": 5,
+      "2026-05-05": 5,
+      "2026-05-06": 5,
+      "2026-05-07": 5,
+      "2026-05-08": 5,
+      "2026-05-09": 5,
+      "2026-05-10": 5,
+      "2026-05-11": 5,
+      "2026-05-12": 5,
+      "2026-05-13": 6,
+      "2026-05-14": 6,
+      "2026-05-15": 6,
+      "2026-05-16": 6,
+      "2026-05-17": 6,
+      "2026-05-18": 6,
+      "2026-05-19": 6,
+      "2026-05-20": 5,
+      "2026-05-21": 5,
+      "2026-05-22": 5,
+      "2026-05-23": 5,
+      "2026-05-24": 5,
+      "2026-05-25": 5,
+      "2026-05-26": 6,
+      "2026-05-27": 6,
+      "2026-05-28": 6,
+      "2026-05-29": 6,
+      "2026-05-30": 6,
+      "2026-05-31": 6,
+      "2026-06-01": 6,
+      "2026-06-02": 6,
+      "2026-06-03": 6,
+      "2026-06-04": 5,
+      "2026-06-05": 5,
+      "2026-06-06": 5,
+      "2026-06-07": 5,
+      "2026-06-08": 5,
+      "2026-06-09": 5,
+      "2026-06-10": 5,
+      "2026-06-11": 4,
+      "2026-06-12": 4,
+      "2026-06-13": 4,
+      "2026-06-14": 4,
+      "2026-06-15": 5,
+      "2026-06-16": 5,
+      "2026-06-17": 4,
+      "2026-06-18": 4,
+      "2026-06-19": 4,
+      "2026-06-20": 3,
+      "2026-06-21": 3,
+      "2026-06-22": 3,
+      "2026-06-23": 3,
+      "2026-06-24": 4,
+      "2026-06-25": 5,
+      "2026-06-26": 5,
+      "2026-06-27": 6,
+      "2026-06-28": 6,
+      "2026-06-29": 6,
+      "2026-06-30": 6,
+      "2026-07-01": 6,
+      "2026-07-02": 6,
+      "2026-07-03": 6,
+      "2026-07-04": 6,
+      "2026-07-05": 6,
+      "2026-07-06": 6,
+      "2026-07-07": 6,
+      "2026-07-08": 6,
+      "2026-07-09": 6,
+      "2026-07-10": 6,
+      "2026-07-11": 6,
+      "2026-07-12": 6,
+      "2026-07-13": 6,
+      "2026-07-14": 6,
+      "2026-07-15": 6,
+      "2026-07-16": 6,
+      "2026-07-17": 6,
+      "2026-07-18": 6,
+      "2026-07-19": 6,
+      "2026-07-20": 6,
+      "2026-07-21": 6,
+      "2026-07-22": 6,
+      "2026-07-23": 6,
+      "2026-07-24": 6,
+      "2026-07-25": 6,
+      "2026-07-26": 6,
+      "2026-07-27": 6,
+      "2026-07-28": 6,
+      "2026-07-29": 6,
+      "2026-07-30": 6,
+      "2026-07-31": 6,
+      "2026-08-01": 6,
+      "2026-08-02": 6,
+      "2026-08-03": 6,
+      "2026-08-04": 6,
+      "2026-08-05": 6,
+      "2026-08-06": 5,
+      "2026-08-07": 5,
+      "2026-08-08": 5,
+      "2026-08-09": 5,
+      "2026-08-10": 5,
+      "2026-08-11": 6,
+      "2026-08-12": 6,
+      "2026-08-13": 6,
+      "2026-08-14": 6,
+      "2026-08-15": 6,
+      "2026-08-16": 6,
+      "2026-08-17": 6,
+      "2026-08-18": 6,
+      "2026-08-19": 6,
+      "2026-08-20": 6,
+      "2026-08-21": 6,
+      "2026-08-22": 6,
+      "2026-08-23": 6,
+      "2026-08-24": 6,
+      "2026-08-25": 6,
+      "2026-08-26": 6,
+      "2026-08-27": 6,
+      "2026-08-28": 6,
+      "2026-08-29": 6,
+      "2026-08-30": 6,
+      "2026-08-31": 6,
+      "2026-09-01": 6,
+      "2026-09-02": 6,
+      "2026-09-03": 6,
+      "2026-09-04": 6,
+      "2026-09-05": 5,
+      "2026-09-06": 5,
+      "2026-09-07": 5,
+      "2026-09-08": 5,
+      "2026-09-09": 5,
+      "2026-09-10": 5,
+      "2026-09-11": 5,
+      "2026-09-12": 4,
+      "2026-09-13": 4,
+      "2026-09-14": 5,
+      "2026-09-15": 5,
+      "2026-09-16": 5,
+      "2026-09-17": 5,
+      "2026-09-18": 5,
+      "2026-09-19": 5,
+      "2026-09-20": 5,
+      "2026-09-21": 5,
+      "2026-09-22": 6,
+      "2026-09-23": 6,
+      "2026-09-24": 6,
+      "2026-09-25": 6,
+      "2026-09-26": 6,
+      "2026-09-27": 6,
+      "2026-09-28": 6,
+      "2026-09-29": 6,
+      "2026-09-30": 6,
+      "2026-10-01": 6,
+      "2026-10-02": 6,
+      "2026-10-03": 6,
+      "2026-10-04": 6,
+      "2026-10-05": 6,
+      "2026-10-06": 6,
+      "2026-10-07": 6,
+      "2026-10-08": 6,
+      "2026-10-09": 6,
+      "2026-10-10": 6,
+      "2026-10-11": 6,
+      "2026-10-12": 6,
+      "2026-10-13": 6,
+      "2026-10-14": 6,
+      "2026-10-15": 6,
+      "2026-10-16": 6,
+      "2026-10-17": 6,
+      "2026-10-18": 6,
+      "2026-10-19": 6,
+      "2026-10-20": 6,
+      "2026-10-21": 6,
+      "2026-10-22": 6,
+      "2026-10-23": 6,
+      "2026-10-24": 6,
+      "2026-10-25": 6,
+      "2026-10-26": 6,
+      "2026-10-27": 6,
+      "2026-10-28": 6,
+      "2026-10-29": 6,
+      "2026-10-30": 6,
+      "2026-10-31": 6,
+      "2026-11-01": 6,
+      "2026-11-02": 6,
+      "2026-11-03": 6,
+      "2026-11-04": 6,
+      "2026-11-05": 6,
+      "2026-11-06": 6,
+      "2026-11-07": 6,
+      "2026-11-08": 6,
+      "2026-11-09": 6,
+      "2026-11-10": 6,
+      "2026-11-11": 6,
+      "2026-11-12": 6,
+      "2026-11-13": 6,
+      "2026-11-14": 6,
+      "2026-11-15": 6,
+      "2026-11-16": 6,
+      "2026-11-17": 6,
+      "2026-11-18": 6,
+      "2026-11-19": 6,
+      "2026-11-20": 6,
+      "2026-11-21": 6,
+      "2026-11-22": 6,
+      "2026-11-23": 6,
+      "2026-11-24": 6,
+      "2026-11-25": 5,
+      "2026-11-26": 5,
+      "2026-11-27": 3,
+      "2026-11-28": 3,
+      "2026-11-29": 3,
+      "2026-11-30": 3,
+      "2026-12-01": 3,
+      "2026-12-02": 3,
+      "2026-12-03": 3,
+      "2026-12-04": 2,
+      "2026-12-05": 2,
+      "2026-12-06": 2,
+      "2026-12-07": 3,
+      "2026-12-08": 3,
+      "2026-12-09": 3,
+      "2026-12-10": 3,
+      "2026-12-11": 4,
+      "2026-12-12": 4,
+      "2026-12-13": 4,
+      "2026-12-14": 4,
+      "2026-12-15": 4,
+      "2026-12-16": 4,
+      "2026-12-17": 4,
+      "2026-12-18": 4,
+      "2026-12-19": 3,
+      "2026-12-20": 4,
+      "2026-12-21": 5,
+      "2026-12-22": 5,
+      "2026-12-23": 5,
+      "2026-12-24": 5,
+      "2026-12-25": 5,
+      "2026-12-26": 5,
+      "2026-12-27": 5,
+      "2026-12-28": 4,
+      "2026-12-29": 4,
+      "2026-12-30": 4,
+      "2026-12-31": 4,
+      "2027-01-01": 5,
+      "2027-01-02": 5
+};
+
+    const monthsContainer = document.getElementById('monthsContainer');
+    const summaryBox = document.getElementById('summaryBox');
+    const windowTitle = document.getElementById('windowTitle');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    let startDate = null;
+    let endDate = null;
+    let currentStartMonth = 0; // Jan 2026
+
+    function renderVisibleMonths() {
+      monthsContainer.innerHTML = '';
+
+      const visible = [
+        { year: 2026, month: currentStartMonth },
+        { year: 2026, month: currentStartMonth + 1 }
+      ].filter(m => m.month <= 11);
+
+      const labels = visible.map(m => monthLabel(m.year, m.month));
+      windowTitle.textContent = labels.join(' • ');
+
+      visible.forEach(({ year, month }) => {
+        const monthCard = document.createElement('div');
+        monthCard.className = 'month-card';
+
+        const title = document.createElement('div');
+        title.className = 'month-title';
+        title.textContent = monthLabel(year, month);
+        monthCard.appendChild(title);
+
+        const head = document.createElement('div');
+        head.className = 'head';
+        ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => {
+          const el = document.createElement('div');
+          el.textContent = d;
+          head.appendChild(el);
+        });
+        monthCard.appendChild(head);
+
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+
+        const firstDay = new Date(year, month, 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const startOffset = (firstDay.getDay() + 6) % 7;
+
+        for (let i = 0; i < startOffset; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'day muted';
+          grid.appendChild(empty);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const date = new Date(year, month, day);
+          const key = keyFromDate(date);
+          const slots = quotaData[key] ?? 0;
+          const status = getStatus(slots);
+
+          const cell = document.createElement('div');
+          cell.className = `day ${status}`;
+          cell.dataset.key = key;
+          cell.innerHTML = `${day}<small>${slots <= 0 ? 'FULL' : slots + ' left'}</small>`;
+          cell.addEventListener('click', () => onSelectDate(date));
+          grid.appendChild(cell);
+        }
+
+        monthCard.appendChild(grid);
+        monthsContainer.appendChild(monthCard);
+      });
+
+      prevBtn.disabled = currentStartMonth === 0;
+      nextBtn.disabled = currentStartMonth >= 10;
+
+      paintSelection();
+    }
+
+    function onSelectDate(date) {
+      if (!startDate || (startDate && endDate)) {
+        startDate = date;
+        endDate = null;
+      } else if (date < startDate) {
+        endDate = startDate;
+        startDate = date;
+      } else {
+        endDate = date;
+      }
+      paintSelection();
+      updateSummary();
+    }
+
+    function paintSelection() {
+      document.querySelectorAll('.day').forEach(cell => cell.classList.remove('range'));
+      if (!startDate) return;
+
+      const start = new Date(startDate);
+      const end = endDate ? new Date(endDate) : new Date(startDate);
+
+      document.querySelectorAll('.day').forEach(cell => {
+        const key = cell.dataset.key;
+        if (!key) return;
+        const d = new Date(key + 'T00:00:00');
+        if (d >= start && d <= end) {
+          cell.classList.add('range');
+        }
+      });
+    }
+
+    function updateSummary() {
+      const toolbarHtml = `
+        <div class="toolbar">
+          <button class="btn-secondary" id="resetBtn" type="button">Reset selection</button>
+        </div>
+      `;
+
+      if (!startDate) {
+        summaryBox.innerHTML = 'Select a date range to check availability.' + toolbarHtml;
+        wireToolbar();
+        return;
+      }
+
+      if (!endDate) {
+        summaryBox.innerHTML = `Start date selected: <strong>${formatPretty(startDate)}</strong>. Now tap an end date.` + toolbarHtml;
+        wireToolbar();
+        return;
+      }
+
+      const days = [];
+      let current = new Date(startDate);
+      while (current <= endDate) {
+        days.push(new Date(current));
+        current.setDate(current.getDate() + 1);
+      }
+
+      const blocked = [];
+      const low = [];
+
+      days.forEach(d => {
+        const key = keyFromDate(d);
+        const slots = quotaData[key] ?? 0;
+        if (slots <= 0) blocked.push(formatPretty(d));
+        else if (slots === 1) low.push(formatPretty(d));
+      });
+
+      if (blocked.length > 0) {
+        summaryBox.innerHTML = `
+          Selected range: <strong>${formatPretty(startDate)}</strong> to <strong>${formatPretty(endDate)}</strong><br>
+          <span class="status-bad">Not available</span><br>
+          Full dates: ${blocked.join(', ')}
+        ` + toolbarHtml;
+      } else if (low.length > 0) {
+        summaryBox.innerHTML = `
+          Selected range: <strong>${formatPretty(startDate)}</strong> to <strong>${formatPretty(endDate)}</strong><br>
+          <span class="status-good">Available with caution</span><br>
+          Low quota dates: ${low.join(', ')}
+        ` + toolbarHtml;
+      } else {
+        summaryBox.innerHTML = `
+          Selected range: <strong>${formatPretty(startDate)}</strong> to <strong>${formatPretty(endDate)}</strong><br>
+          <span class="status-good">Available</span><br>
+          All dates in selected range have quota.
+        ` + toolbarHtml;
+      }
+
+      wireToolbar();
+    }
+
+    function resetSelection() {
+      startDate = null;
+      endDate = null;
+      paintSelection();
+      updateSummary();
+    }
+
+    function wireToolbar() {
+      const resetBtn = document.getElementById('resetBtn');
+      if (resetBtn) resetBtn.onclick = resetSelection;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentStartMonth > 0) {
+        currentStartMonth -= 1;
+        renderVisibleMonths();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentStartMonth < 10) {
+        currentStartMonth += 1;
+        renderVisibleMonths();
+      }
+    });
+
+    renderVisibleMonths();
+    wireToolbar();
+  </script>
+</body>
+</html>
