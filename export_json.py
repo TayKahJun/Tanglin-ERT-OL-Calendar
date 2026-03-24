@@ -1,54 +1,46 @@
-from openpyxl import load_workbook
-from datetime import datetime, date
-import json
 from pathlib import Path
-import os
+import pandas as pd
+import json
 
-# Force everything to use your Desktop
-desktop = Path.home() / "Desktop"
-excel_file = desktop / "Test -Overseas Leave Application.xlsx"
-output_file = desktop / "data.json"
-sheet_name = "Daily Slots"
+base_dir = Path(__file__).resolve().parent
 
-def normalize_date(value):
-    if isinstance(value, (datetime, date)):
-        return value.strftime("%Y-%m-%d")
-    if value is None:
+excel_file = base_dir / "Test -Overseas Leave Application.xlsx"
+json_file = base_dir / "data.json"
+
+def convert_value(value):
+    if pd.isna(value):
         return ""
-    return str(value).strip()
+    if isinstance(value, pd.Timestamp):
+        return value.strftime("%Y-%m-%d")
+    return value
 
 def main():
-    print("Current working folder:", os.getcwd())
+    print("Current working folder:", base_dir)
     print("Looking for Excel file at:", excel_file)
-    print("Will save JSON to:", output_file)
+    print("Will save JSON to:", json_file)
 
     if not excel_file.exists():
-      print("ERROR: Excel file not found.")
-      return
+        print("ERROR: Excel file not found.")
+        return
 
-    wb = load_workbook(excel_file, data_only=True)
-    ws = wb[sheet_name]
+    try:
+        df = pd.read_excel(excel_file)
+        records = []
 
-    result = []
-    row = 2
+        for _, row in df.iterrows():
+            record = {}
+            for col in df.columns:
+                record[str(col)] = convert_value(row[col])
+            records.append(record)
 
-    while True:
-        date_val = ws[f"A{row}"].value
-        quota_bal = ws[f"C{row}"].value
+        with open(json_file, "w", encoding="utf-8") as f:
+            json.dump(records, f, ensure_ascii=False, indent=2)
 
-        if date_val in (None, ""):
-            break
+        print(f"JSON exported successfully: {json_file}")
+        print(f"Total rows exported: {len(records)}")
 
-        result.append({
-            "date": normalize_date(date_val),
-            "quotaBalance": quota_bal
-        })
-        row += 1
-
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-
-    print(f"SUCCESS: Exported {len(result)} rows to {output_file}")
+    except Exception as e:
+        print("ERROR:", e)
 
 if __name__ == "__main__":
     main()
