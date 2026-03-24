@@ -5,27 +5,27 @@
   },
   {
     "Date": "2026-01-02",
-    "Quota Bal": 2
+    "Quota Bal": 4
   },
   {
     "Date": "2026-01-03",
-    "Quota Bal": 0
-  },
-  {
-    "Date": "2026-01-04",
-    "Quota Bal": 1
-  },
-  {
-    "Date": "2026-01-05",
-    "Quota Bal": 3
-  },
-  {
-    "Date": "2026-01-06",
     "Quota Bal": 2
   },
   {
+    "Date": "2026-01-04",
+    "Quota Bal": 3
+  },
+  {
+    "Date": "2026-01-05",
+    "Quota Bal": 5
+  },
+  {
+    "Date": "2026-01-06",
+    "Quota Bal": 4
+  },
+  {
     "Date": "2026-01-07",
-    "Quota Bal": -1
+    "Quota Bal": 1
   },
   {
     "Date": "2026-01-08",
