@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tanglin ERT Leave Calendar - Toggle Sample</title>
+  <title>Tanglin ERT Leave Calendar - Auto Refresh</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -187,6 +187,32 @@
       margin-top: 10px;
       line-height: 1.5;
     }
+    .error-box {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .loading-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .refresh-info {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #6b7280;
+    }
   </style>
 </head>
 <body>
@@ -194,7 +220,7 @@
     <div class="card">
       <h1>Tanglin ERT Leave Calendar</h1>
       <div class="sub">2-Month display at a time. This is a sample for OL Status by TKJ</div>
-      <div class="sub">Tap start date, then tap end date. Use Prev / Next to move through the year.</div>
+      <div class="sub">Tap start date, then tap end date. Page checks for JSON updates every 3 seconds.</div>
 
       <div class="legend">
         <span class="pill ok">Available</span>
@@ -204,22 +230,26 @@
       </div>
 
       <div class="summary" id="summaryBox">
-        Select a date range to check availability.
+        Loading quota data...
         <div class="toolbar">
           <button class="btn-secondary" id="resetBtn" type="button">Reset selection</button>
         </div>
       </div>
 
+      <div class="loading-box" id="loadingBox">Loading data from data.json...</div>
+      <div class="error-box" id="errorBox"></div>
+      <div class="refresh-info" id="refreshInfo">Waiting for first load...</div>
+
       <div class="nav-row">
         <button class="nav-btn" id="prevBtn" type="button">Prev</button>
-        <div class="month-window-title" id="windowTitle">January 2026 • February 2026</div>
+        <div class="month-window-title" id="windowTitle">Loading...</div>
         <button class="nav-btn" id="nextBtn" type="button">Next</button>
       </div>
 
       <div id="monthsContainer"></div>
 
       <a href="#" class="btn">Open Form Submission</a>
-      <div class="note">This toggle version shows 2 months at a time. It still supports cross-month selection inside the visible window and feels much cleaner on mobile.</div>
+      <div class="note">This version reads quota directly from <code>data.json</code>. Keep <code>index.html</code> and <code>data.json</code> in the same folder, then refresh after exporting the latest JSON. The page will detect JSON changes automatically every 3 seconds.</div>
     </div>
   </div>
 
@@ -246,395 +276,60 @@
       return 'ok';
     }
 
-    // Quota data loaded from Daily Slots sheet
-    const quotaData = {
-      "2026-01-01": 2,
-      "2026-01-02": 4,
-      "2026-01-03": 2,
-      "2026-01-04": 3,
-      "2026-01-05": 5,
-      "2026-01-06": 4,
-      "2026-01-07": -2,
-      "2026-01-08": 1,
-      "2026-01-09": 1,
-      "2026-01-10": -1,
-      "2026-01-11": 1,
-      "2026-01-12": 2,
-      "2026-01-13": 3,
-      "2026-01-14": 2,
-      "2026-01-15": 3,
-      "2026-01-16": 1,
-      "2026-01-17": 1,
-      "2026-01-18": 2,
-      "2026-01-19": 4,
-      "2026-01-20": 4,
-      "2026-01-21": 5,
-      "2026-01-22": 3,
-      "2026-01-23": 4,
-      "2026-01-24": 4,
-      "2026-01-25": 4,
-      "2026-01-26": 4,
-      "2026-01-27": 4,
-      "2026-01-28": 4,
-      "2026-01-29": 4,
-      "2026-01-30": 5,
-      "2026-01-31": 5,
-      "2026-02-01": 5,
-      "2026-02-02": 6,
-      "2026-02-03": 6,
-      "2026-02-04": 6,
-      "2026-02-05": 6,
-      "2026-02-06": 4,
-      "2026-02-07": 4,
-      "2026-02-08": 4,
-      "2026-02-09": 4,
-      "2026-02-10": 4,
-      "2026-02-11": 5,
-      "2026-02-12": 5,
-      "2026-02-13": 6,
-      "2026-02-14": 6,
-      "2026-02-15": 4,
-      "2026-02-16": 4,
-      "2026-02-17": 4,
-      "2026-02-18": 5,
-      "2026-02-19": 6,
-      "2026-02-20": 6,
-      "2026-02-21": 6,
-      "2026-02-22": 6,
-      "2026-02-23": 6,
-      "2026-02-24": 5,
-      "2026-02-25": 5,
-      "2026-02-26": 4,
-      "2026-02-27": 4,
-      "2026-02-28": 4,
-      "2026-03-01": 4,
-      "2026-03-02": 4,
-      "2026-03-03": 5,
-      "2026-03-04": 5,
-      "2026-03-05": 5,
-      "2026-03-06": 5,
-      "2026-03-07": 4,
-      "2026-03-08": 4,
-      "2026-03-09": 4,
-      "2026-03-10": 4,
-      "2026-03-11": 4,
-      "2026-03-12": 5,
-      "2026-03-13": 4,
-      "2026-03-14": 4,
-      "2026-03-15": 4,
-      "2026-03-16": 4,
-      "2026-03-17": 4,
-      "2026-03-18": 5,
-      "2026-03-19": 5,
-      "2026-03-20": 5,
-      "2026-03-21": 6,
-      "2026-03-22": 6,
-      "2026-03-23": 6,
-      "2026-03-24": 6,
-      "2026-03-25": 6,
-      "2026-03-26": 6,
-      "2026-03-27": 6,
-      "2026-03-28": 6,
-      "2026-03-29": 6,
-      "2026-03-30": 6,
-      "2026-03-31": 6,
-      "2026-04-01": 6,
-      "2026-04-02": 5,
-      "2026-04-03": 5,
-      "2026-04-04": 5,
-      "2026-04-05": 5,
-      "2026-04-06": 5,
-      "2026-04-07": 5,
-      "2026-04-08": 5,
-      "2026-04-09": 5,
-      "2026-04-10": 5,
-      "2026-04-11": 4,
-      "2026-04-12": 4,
-      "2026-04-13": 4,
-      "2026-04-14": 4,
-      "2026-04-15": 4,
-      "2026-04-16": 4,
-      "2026-04-17": 4,
-      "2026-04-18": 4,
-      "2026-04-19": 4,
-      "2026-04-20": 4,
-      "2026-04-21": 4,
-      "2026-04-22": 4,
-      "2026-04-23": 4,
-      "2026-04-24": 6,
-      "2026-04-25": 6,
-      "2026-04-26": 6,
-      "2026-04-27": 6,
-      "2026-04-28": 5,
-      "2026-04-29": 5,
-      "2026-04-30": 5,
-      "2026-05-01": 4,
-      "2026-05-02": 4,
-      "2026-05-03": 4,
-      "2026-05-04": 5,
-      "2026-05-05": 5,
-      "2026-05-06": 5,
-      "2026-05-07": 5,
-      "2026-05-08": 5,
-      "2026-05-09": 5,
-      "2026-05-10": 5,
-      "2026-05-11": 5,
-      "2026-05-12": 5,
-      "2026-05-13": 6,
-      "2026-05-14": 6,
-      "2026-05-15": 6,
-      "2026-05-16": 6,
-      "2026-05-17": 6,
-      "2026-05-18": 6,
-      "2026-05-19": 6,
-      "2026-05-20": 5,
-      "2026-05-21": 5,
-      "2026-05-22": 5,
-      "2026-05-23": 5,
-      "2026-05-24": 5,
-      "2026-05-25": 5,
-      "2026-05-26": 6,
-      "2026-05-27": 6,
-      "2026-05-28": 6,
-      "2026-05-29": 6,
-      "2026-05-30": 6,
-      "2026-05-31": 6,
-      "2026-06-01": 6,
-      "2026-06-02": 6,
-      "2026-06-03": 6,
-      "2026-06-04": 5,
-      "2026-06-05": 5,
-      "2026-06-06": 5,
-      "2026-06-07": 5,
-      "2026-06-08": 5,
-      "2026-06-09": 5,
-      "2026-06-10": 5,
-      "2026-06-11": 4,
-      "2026-06-12": 4,
-      "2026-06-13": 4,
-      "2026-06-14": 4,
-      "2026-06-15": 5,
-      "2026-06-16": 5,
-      "2026-06-17": 4,
-      "2026-06-18": 4,
-      "2026-06-19": 4,
-      "2026-06-20": 3,
-      "2026-06-21": 3,
-      "2026-06-22": 3,
-      "2026-06-23": 3,
-      "2026-06-24": 4,
-      "2026-06-25": 5,
-      "2026-06-26": 5,
-      "2026-06-27": 6,
-      "2026-06-28": 6,
-      "2026-06-29": 6,
-      "2026-06-30": 6,
-      "2026-07-01": 6,
-      "2026-07-02": 6,
-      "2026-07-03": 6,
-      "2026-07-04": 6,
-      "2026-07-05": 6,
-      "2026-07-06": 6,
-      "2026-07-07": 6,
-      "2026-07-08": 6,
-      "2026-07-09": 6,
-      "2026-07-10": 6,
-      "2026-07-11": 6,
-      "2026-07-12": 6,
-      "2026-07-13": 6,
-      "2026-07-14": 6,
-      "2026-07-15": 6,
-      "2026-07-16": 6,
-      "2026-07-17": 6,
-      "2026-07-18": 6,
-      "2026-07-19": 6,
-      "2026-07-20": 6,
-      "2026-07-21": 6,
-      "2026-07-22": 6,
-      "2026-07-23": 6,
-      "2026-07-24": 6,
-      "2026-07-25": 6,
-      "2026-07-26": 6,
-      "2026-07-27": 6,
-      "2026-07-28": 6,
-      "2026-07-29": 6,
-      "2026-07-30": 6,
-      "2026-07-31": 6,
-      "2026-08-01": 6,
-      "2026-08-02": 6,
-      "2026-08-03": 6,
-      "2026-08-04": 6,
-      "2026-08-05": 6,
-      "2026-08-06": 5,
-      "2026-08-07": 5,
-      "2026-08-08": 5,
-      "2026-08-09": 5,
-      "2026-08-10": 5,
-      "2026-08-11": 6,
-      "2026-08-12": 6,
-      "2026-08-13": 6,
-      "2026-08-14": 6,
-      "2026-08-15": 6,
-      "2026-08-16": 6,
-      "2026-08-17": 6,
-      "2026-08-18": 6,
-      "2026-08-19": 6,
-      "2026-08-20": 6,
-      "2026-08-21": 6,
-      "2026-08-22": 6,
-      "2026-08-23": 6,
-      "2026-08-24": 6,
-      "2026-08-25": 6,
-      "2026-08-26": 6,
-      "2026-08-27": 6,
-      "2026-08-28": 6,
-      "2026-08-29": 6,
-      "2026-08-30": 6,
-      "2026-08-31": 6,
-      "2026-09-01": 6,
-      "2026-09-02": 6,
-      "2026-09-03": 6,
-      "2026-09-04": 6,
-      "2026-09-05": 5,
-      "2026-09-06": 5,
-      "2026-09-07": 5,
-      "2026-09-08": 5,
-      "2026-09-09": 5,
-      "2026-09-10": 5,
-      "2026-09-11": 5,
-      "2026-09-12": 4,
-      "2026-09-13": 4,
-      "2026-09-14": 5,
-      "2026-09-15": 5,
-      "2026-09-16": 5,
-      "2026-09-17": 5,
-      "2026-09-18": 5,
-      "2026-09-19": 5,
-      "2026-09-20": 5,
-      "2026-09-21": 5,
-      "2026-09-22": 6,
-      "2026-09-23": 6,
-      "2026-09-24": 6,
-      "2026-09-25": 6,
-      "2026-09-26": 6,
-      "2026-09-27": 6,
-      "2026-09-28": 6,
-      "2026-09-29": 6,
-      "2026-09-30": 6,
-      "2026-10-01": 6,
-      "2026-10-02": 6,
-      "2026-10-03": 6,
-      "2026-10-04": 6,
-      "2026-10-05": 6,
-      "2026-10-06": 6,
-      "2026-10-07": 6,
-      "2026-10-08": 6,
-      "2026-10-09": 6,
-      "2026-10-10": 6,
-      "2026-10-11": 6,
-      "2026-10-12": 6,
-      "2026-10-13": 6,
-      "2026-10-14": 6,
-      "2026-10-15": 6,
-      "2026-10-16": 6,
-      "2026-10-17": 6,
-      "2026-10-18": 6,
-      "2026-10-19": 6,
-      "2026-10-20": 6,
-      "2026-10-21": 6,
-      "2026-10-22": 6,
-      "2026-10-23": 6,
-      "2026-10-24": 6,
-      "2026-10-25": 6,
-      "2026-10-26": 6,
-      "2026-10-27": 6,
-      "2026-10-28": 6,
-      "2026-10-29": 6,
-      "2026-10-30": 6,
-      "2026-10-31": 6,
-      "2026-11-01": 6,
-      "2026-11-02": 6,
-      "2026-11-03": 6,
-      "2026-11-04": 6,
-      "2026-11-05": 6,
-      "2026-11-06": 6,
-      "2026-11-07": 6,
-      "2026-11-08": 6,
-      "2026-11-09": 6,
-      "2026-11-10": 6,
-      "2026-11-11": 6,
-      "2026-11-12": 6,
-      "2026-11-13": 6,
-      "2026-11-14": 6,
-      "2026-11-15": 6,
-      "2026-11-16": 6,
-      "2026-11-17": 6,
-      "2026-11-18": 6,
-      "2026-11-19": 6,
-      "2026-11-20": 6,
-      "2026-11-21": 6,
-      "2026-11-22": 6,
-      "2026-11-23": 6,
-      "2026-11-24": 6,
-      "2026-11-25": 5,
-      "2026-11-26": 5,
-      "2026-11-27": 3,
-      "2026-11-28": 3,
-      "2026-11-29": 3,
-      "2026-11-30": 3,
-      "2026-12-01": 3,
-      "2026-12-02": 3,
-      "2026-12-03": 3,
-      "2026-12-04": 2,
-      "2026-12-05": 2,
-      "2026-12-06": 2,
-      "2026-12-07": 3,
-      "2026-12-08": 3,
-      "2026-12-09": 3,
-      "2026-12-10": 3,
-      "2026-12-11": 4,
-      "2026-12-12": 4,
-      "2026-12-13": 4,
-      "2026-12-14": 4,
-      "2026-12-15": 4,
-      "2026-12-16": 4,
-      "2026-12-17": 4,
-      "2026-12-18": 4,
-      "2026-12-19": 3,
-      "2026-12-20": 4,
-      "2026-12-21": 5,
-      "2026-12-22": 5,
-      "2026-12-23": 5,
-      "2026-12-24": 5,
-      "2026-12-25": 5,
-      "2026-12-26": 5,
-      "2026-12-27": 5,
-      "2026-12-28": 4,
-      "2026-12-29": 4,
-      "2026-12-30": 4,
-      "2026-12-31": 4,
-      "2027-01-01": 5,
-      "2027-01-02": 5
-};
-
     const monthsContainer = document.getElementById('monthsContainer');
     const summaryBox = document.getElementById('summaryBox');
     const windowTitle = document.getElementById('windowTitle');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const loadingBox = document.getElementById('loadingBox');
+    const errorBox = document.getElementById('errorBox');
+    const refreshInfo = document.getElementById('refreshInfo');
 
+    let quotaData = {};
+    let allQuotaDates = [];
     let startDate = null;
     let endDate = null;
-    let currentStartMonth = 0; // Jan 2026
+    let currentStartMonth = 0;
+    let currentYear = 2026;
+    let maxMonthStart = 10;
+    let minYear = 2026;
+    let minMonth = 0;
+    let maxYear = 2026;
+    let lastJsonText = '';
+    let isLoading = false;
+    let hasLoadedOnce = false;
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.style.display = 'block';
+      loadingBox.style.display = 'none';
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      refreshInfo.textContent = 'Last check failed.';
+    }
+
+    function hideMessages() {
+      errorBox.style.display = 'none';
+      loadingBox.style.display = 'none';
+    }
+
+    function setRefreshInfo(message) {
+      refreshInfo.textContent = message;
+    }
+
+    function getVisibleMonths() {
+      const first = new Date(currentYear, currentStartMonth, 1);
+      const second = new Date(currentYear, currentStartMonth + 1, 1);
+      return [
+        { year: first.getFullYear(), month: first.getMonth() },
+        { year: second.getFullYear(), month: second.getMonth() }
+      ];
+    }
 
     function renderVisibleMonths() {
       monthsContainer.innerHTML = '';
 
-      const visible = [
-        { year: 2026, month: currentStartMonth },
-        { year: 2026, month: currentStartMonth + 1 }
-      ].filter(m => m.month <= 11);
-
+      const visible = getVisibleMonths();
       const labels = visible.map(m => monthLabel(m.year, m.month));
       windowTitle.textContent = labels.join(' • ');
 
@@ -687,8 +382,8 @@
         monthsContainer.appendChild(monthCard);
       });
 
-      prevBtn.disabled = currentStartMonth === 0;
-      nextBtn.disabled = currentStartMonth >= 10;
+      prevBtn.disabled = currentYear === minYear && currentStartMonth === minMonth;
+      nextBtn.disabled = currentYear === maxYear && currentStartMonth >= maxMonthStart;
 
       paintSelection();
     }
@@ -795,22 +490,97 @@
       if (resetBtn) resetBtn.onclick = resetSelection;
     }
 
-    prevBtn.addEventListener('click', () => {
-      if (currentStartMonth > 0) {
-        currentStartMonth -= 1;
-        renderVisibleMonths();
-      }
-    });
+    function shiftWindow(direction) {
+      const nextDate = new Date(currentYear, currentStartMonth + direction, 1);
+      const proposedYear = nextDate.getFullYear();
+      const proposedMonth = nextDate.getMonth();
 
-    nextBtn.addEventListener('click', () => {
-      if (currentStartMonth < 10) {
-        currentStartMonth += 1;
-        renderVisibleMonths();
-      }
-    });
+      const beforeMin = proposedYear < minYear || (proposedYear === minYear && proposedMonth < minMonth);
+      const afterMax = proposedYear > maxYear || (proposedYear === maxYear && proposedMonth > maxMonthStart);
 
-    renderVisibleMonths();
-    wireToolbar();
+      if (beforeMin || afterMax) return;
+
+      currentYear = proposedYear;
+      currentStartMonth = proposedMonth;
+      renderVisibleMonths();
+    }
+
+    prevBtn.addEventListener('click', () => shiftWindow(-1));
+    nextBtn.addEventListener('click', () => shiftWindow(1));
+
+    function applyQuotaData(data) {
+      quotaData = {};
+      data.forEach(row => {
+        if (row && row.date) {
+          const balance = Number(row.quotaBalance);
+          quotaData[row.date] = Number.isNaN(balance) ? 0 : balance;
+        }
+      });
+
+      allQuotaDates = Object.keys(quotaData).sort();
+      if (allQuotaDates.length === 0) {
+        throw new Error('No valid date rows found in data.json');
+      }
+
+      const firstDate = new Date(allQuotaDates[0] + 'T00:00:00');
+      const lastDate = new Date(allQuotaDates[allQuotaDates.length - 1] + 'T00:00:00');
+
+      minYear = firstDate.getFullYear();
+      minMonth = firstDate.getMonth();
+      maxYear = lastDate.getFullYear();
+      maxMonthStart = lastDate.getMonth() === 0
+        ? 0
+        : new Date(lastDate.getFullYear(), lastDate.getMonth() - 1, 1).getMonth();
+
+      if (!hasLoadedOnce) {
+        currentYear = minYear;
+        currentStartMonth = minMonth;
+      }
+
+      hideMessages();
+      updateSummary();
+      renderVisibleMonths();
+      wireToolbar();
+      hasLoadedOnce = true;
+    }
+
+    async function loadQuotaData() {
+      if (isLoading) return;
+      isLoading = true;
+
+      try {
+        const response = await fetch('data.json?_ts=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const text = await response.text();
+        const nowText = 'Last checked: ' + new Date().toLocaleTimeString();
+
+        if (text === lastJsonText) {
+          setRefreshInfo(nowText + ' • No changes detected');
+          isLoading = false;
+          return;
+        }
+
+        const data = JSON.parse(text);
+        if (!Array.isArray(data) || data.length === 0) {
+          throw new Error('data.json is empty or not an array');
+        }
+
+        lastJsonText = text;
+        applyQuotaData(data);
+        setRefreshInfo(nowText + ' • Calendar updated');
+      } catch (error) {
+        console.error(error);
+        showError('Failed to load data.json. Keep index.html and data.json in the same folder, run the local server from that folder, and refresh after exporting the latest JSON.');
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    loadQuotaData();
+    setInterval(loadQuotaData, 3000);
   </script>
 </body>
 </html>
