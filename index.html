@@ -3,20 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tanglin ERT Leave Calendar - Auto Refresh</title>
+  <title>Tanglin ERT Leave Calendar</title>
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f3f4f6;
       color: #111827;
     }
+
     .wrap {
       max-width: 520px;
       margin: 0 auto;
       padding: 16px;
     }
+
     .card {
       background: #fff;
       border-radius: 18px;
@@ -24,15 +27,18 @@
       box-shadow: 0 4px 14px rgba(0,0,0,0.08);
       margin-bottom: 14px;
     }
+
     h1 {
       font-size: 22px;
       margin: 0 0 6px;
     }
+
     .sub {
       font-size: 13px;
       color: #6b7280;
       margin-bottom: 10px;
     }
+
     .legend {
       display: flex;
       gap: 8px;
@@ -40,15 +46,17 @@
       margin-bottom: 14px;
       font-size: 12px;
     }
+
     .pill {
       padding: 6px 10px;
       border-radius: 999px;
       font-weight: 700;
     }
-    .ok { background: #dcfce7; color: #166534; }
-    .low { background: #fef3c7; color: #92400e; }
-    .full { background: #fee2e2; color: #991b1b; }
-    .selected { background: #dbeafe; color: #1d4ed8; }
+
+    .ok-pill { background: #dcfce7; color: #166534; }
+    .low-pill { background: #fef3c7; color: #92400e; }
+    .full-pill { background: #fee2e2; color: #991b1b; }
+    .selected-pill { background: #dbeafe; color: #1d4ed8; }
 
     .summary {
       font-size: 14px;
@@ -60,10 +68,12 @@
       background: #f9fafb;
       border: 1px solid #e5e7eb;
     }
+
     .status-good {
       color: #166534;
       font-weight: 700;
     }
+
     .status-bad {
       color: #991b1b;
       font-weight: 700;
@@ -76,6 +86,7 @@
       justify-content: space-between;
       margin-bottom: 14px;
     }
+
     .nav-btn {
       border: none;
       background: #111827;
@@ -86,10 +97,12 @@
       cursor: pointer;
       min-width: 84px;
     }
+
     .nav-btn:disabled {
       background: #9ca3af;
       cursor: not-allowed;
     }
+
     .month-window-title {
       flex: 1;
       text-align: center;
@@ -104,17 +117,20 @@
       background: #fafafa;
       border: 1px solid #e5e7eb;
     }
+
     .month-title {
       font-size: 16px;
       font-weight: 700;
       margin-bottom: 10px;
     }
+
     .head {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 6px;
       margin-bottom: 6px;
     }
+
     .head div {
       text-align: center;
       font-size: 12px;
@@ -122,11 +138,13 @@
       font-weight: 700;
       padding: 4px 0;
     }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 6px;
     }
+
     .day {
       border: 1px solid #e5e7eb;
       border-radius: 12px;
@@ -139,17 +157,35 @@
       cursor: pointer;
       user-select: none;
     }
+
     .day.muted {
       background: #f9fafb;
       color: #9ca3af;
       cursor: default;
     }
+
+    .day.ok {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .day.low {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .day.full {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
     .day small {
       display: block;
       margin-top: 4px;
       font-size: 10px;
       font-weight: 600;
     }
+
     .day.range {
       outline: 2px solid #2563eb;
     }
@@ -160,7 +196,9 @@
       margin-top: 10px;
       flex-wrap: wrap;
     }
-    .btn, .btn-secondary {
+
+    .btn,
+    .btn-secondary {
       display: inline-block;
       text-align: center;
       padding: 12px 14px;
@@ -171,22 +209,26 @@
       cursor: pointer;
       font-size: 14px;
     }
+
     .btn {
       background: #111827;
       color: white;
       width: 100%;
       margin-top: 14px;
     }
+
     .btn-secondary {
       background: #e5e7eb;
       color: #111827;
     }
+
     .note {
       font-size: 12px;
       color: #6b7280;
       margin-top: 10px;
       line-height: 1.5;
     }
+
     .error-box {
       display: none;
       margin-top: 12px;
@@ -198,6 +240,7 @@
       font-size: 13px;
       line-height: 1.5;
     }
+
     .loading-box {
       margin-top: 12px;
       padding: 12px;
@@ -208,6 +251,7 @@
       font-size: 13px;
       line-height: 1.5;
     }
+
     .refresh-info {
       margin-top: 8px;
       font-size: 12px;
@@ -223,10 +267,10 @@
       <div class="sub">Tap start date, then tap end date. Page checks for JSON updates every 3 seconds.</div>
 
       <div class="legend">
-        <span class="pill ok">Available</span>
-        <span class="pill low">Low</span>
-        <span class="pill full">Full</span>
-        <span class="pill selected">Selected</span>
+        <span class="pill ok-pill">Available</span>
+        <span class="pill low-pill">Low</span>
+        <span class="pill full-pill">Full</span>
+        <span class="pill selected-pill">Selected</span>
       </div>
 
       <div class="summary" id="summaryBox">
@@ -249,41 +293,51 @@
       <div id="monthsContainer"></div>
 
       <a href="#" class="btn">Open Form Submission</a>
-      <div class="note">This version reads quota directly from <code>data.json</code>. Keep <code>index.html</code> and <code>data.json</code> in the same folder, then refresh after exporting the latest JSON. The page will detect JSON changes automatically every 3 seconds.</div>
+      <div class="note">
+        This version reads quota directly from <code>data.json</code>. Keep <code>index.html</code> and <code>data.json</code> in the same folder.
+        The page will detect JSON changes automatically every 3 seconds.
+      </div>
     </div>
   </div>
 
   <script>
     function pad(n) {
-      return String(n).padStart(2, '0');
+      return String(n).padStart(2, "0");
     }
 
     function keyFromDate(date) {
-      return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
     }
 
     function formatPretty(date) {
-      return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      });
     }
 
     function monthLabel(year, month) {
-      return new Date(year, month, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+      return new Date(year, month, 1).toLocaleDateString("en-GB", {
+        month: "long",
+        year: "numeric"
+      });
     }
 
     function getStatus(slots) {
-      if (slots <= 0) return 'full';
-      if (slots === 1) return 'low';
-      return 'ok';
+      if (slots <= 0) return "full";
+      if (slots === 1) return "low";
+      return "ok";
     }
 
-    const monthsContainer = document.getElementById('monthsContainer');
-    const summaryBox = document.getElementById('summaryBox');
-    const windowTitle = document.getElementById('windowTitle');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const loadingBox = document.getElementById('loadingBox');
-    const errorBox = document.getElementById('errorBox');
-    const refreshInfo = document.getElementById('refreshInfo');
+    const monthsContainer = document.getElementById("monthsContainer");
+    const summaryBox = document.getElementById("summaryBox");
+    const windowTitle = document.getElementById("windowTitle");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const loadingBox = document.getElementById("loadingBox");
+    const errorBox = document.getElementById("errorBox");
+    const refreshInfo = document.getElementById("refreshInfo");
 
     let quotaData = {};
     let allQuotaDates = [];
@@ -295,22 +349,22 @@
     let minYear = 2026;
     let minMonth = 0;
     let maxYear = 2026;
-    let lastJsonText = '';
+    let lastJsonText = "";
     let isLoading = false;
     let hasLoadedOnce = false;
 
     function showError(message) {
       errorBox.textContent = message;
-      errorBox.style.display = 'block';
-      loadingBox.style.display = 'none';
+      errorBox.style.display = "block";
+      loadingBox.style.display = "none";
       prevBtn.disabled = true;
       nextBtn.disabled = true;
-      refreshInfo.textContent = 'Last check failed.';
+      refreshInfo.textContent = "Last check failed.";
     }
 
     function hideMessages() {
-      errorBox.style.display = 'none';
-      loadingBox.style.display = 'none';
+      errorBox.style.display = "none";
+      loadingBox.style.display = "none";
     }
 
     function setRefreshInfo(message) {
@@ -320,6 +374,7 @@
     function getVisibleMonths() {
       const first = new Date(currentYear, currentStartMonth, 1);
       const second = new Date(currentYear, currentStartMonth + 1, 1);
+
       return [
         { year: first.getFullYear(), month: first.getMonth() },
         { year: second.getFullYear(), month: second.getMonth() }
@@ -327,40 +382,42 @@
     }
 
     function renderVisibleMonths() {
-      monthsContainer.innerHTML = '';
+      monthsContainer.innerHTML = "";
 
       const visible = getVisibleMonths();
       const labels = visible.map(m => monthLabel(m.year, m.month));
-      windowTitle.textContent = labels.join(' • ');
+      windowTitle.textContent = labels.join(" • ");
 
       visible.forEach(({ year, month }) => {
-        const monthCard = document.createElement('div');
-        monthCard.className = 'month-card';
+        const monthCard = document.createElement("div");
+        monthCard.className = "month-card";
 
-        const title = document.createElement('div');
-        title.className = 'month-title';
+        const title = document.createElement("div");
+        title.className = "month-title";
         title.textContent = monthLabel(year, month);
         monthCard.appendChild(title);
 
-        const head = document.createElement('div');
-        head.className = 'head';
-        ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => {
-          const el = document.createElement('div');
+        const head = document.createElement("div");
+        head.className = "head";
+
+        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(d => {
+          const el = document.createElement("div");
           el.textContent = d;
           head.appendChild(el);
         });
+
         monthCard.appendChild(head);
 
-        const grid = document.createElement('div');
-        grid.className = 'grid';
+        const grid = document.createElement("div");
+        grid.className = "grid";
 
         const firstDay = new Date(year, month, 1);
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const startOffset = (firstDay.getDay() + 6) % 7;
 
         for (let i = 0; i < startOffset; i++) {
-          const empty = document.createElement('div');
-          empty.className = 'day muted';
+          const empty = document.createElement("div");
+          empty.className = "day muted";
           grid.appendChild(empty);
         }
 
@@ -370,11 +427,12 @@
           const slots = quotaData[key] ?? 0;
           const status = getStatus(slots);
 
-          const cell = document.createElement('div');
+          const cell = document.createElement("div");
           cell.className = `day ${status}`;
           cell.dataset.key = key;
-          cell.innerHTML = `${day}<small>${slots <= 0 ? 'FULL' : slots + ' left'}</small>`;
-          cell.addEventListener('click', () => onSelectDate(date));
+          cell.innerHTML = `${day}<small>${slots <= 0 ? "FULL" : slots + " left"}</small>`;
+          cell.addEventListener("click", () => onSelectDate(date));
+
           grid.appendChild(cell);
         }
 
@@ -398,23 +456,26 @@
       } else {
         endDate = date;
       }
+
       paintSelection();
       updateSummary();
     }
 
     function paintSelection() {
-      document.querySelectorAll('.day').forEach(cell => cell.classList.remove('range'));
+      document.querySelectorAll(".day").forEach(cell => cell.classList.remove("range"));
+
       if (!startDate) return;
 
       const start = new Date(startDate);
       const end = endDate ? new Date(endDate) : new Date(startDate);
 
-      document.querySelectorAll('.day').forEach(cell => {
+      document.querySelectorAll(".day").forEach(cell => {
         const key = cell.dataset.key;
         if (!key) return;
-        const d = new Date(key + 'T00:00:00');
+
+        const d = new Date(key + "T00:00:00");
         if (d >= start && d <= end) {
-          cell.classList.add('range');
+          cell.classList.add("range");
         }
       });
     }
@@ -427,19 +488,22 @@
       `;
 
       if (!startDate) {
-        summaryBox.innerHTML = 'Select a date range to check availability.' + toolbarHtml;
+        summaryBox.innerHTML = "Select a date range to check availability." + toolbarHtml;
         wireToolbar();
         return;
       }
 
       if (!endDate) {
-        summaryBox.innerHTML = `Start date selected: <strong>${formatPretty(startDate)}</strong>. Now tap an end date.` + toolbarHtml;
+        summaryBox.innerHTML =
+          `Start date selected: <strong>${formatPretty(startDate)}</strong>. Now tap an end date.` +
+          toolbarHtml;
         wireToolbar();
         return;
       }
 
       const days = [];
       let current = new Date(startDate);
+
       while (current <= endDate) {
         days.push(new Date(current));
         current.setDate(current.getDate() + 1);
@@ -451,6 +515,7 @@
       days.forEach(d => {
         const key = keyFromDate(d);
         const slots = quotaData[key] ?? 0;
+
         if (slots <= 0) blocked.push(formatPretty(d));
         else if (slots === 1) low.push(formatPretty(d));
       });
@@ -459,13 +524,13 @@
         summaryBox.innerHTML = `
           Selected range: <strong>${formatPretty(startDate)}</strong> to <strong>${formatPretty(endDate)}</strong><br>
           <span class="status-bad">Not available</span><br>
-          Full dates: ${blocked.join(', ')}
+          Full dates: ${blocked.join(", ")}
         ` + toolbarHtml;
       } else if (low.length > 0) {
         summaryBox.innerHTML = `
           Selected range: <strong>${formatPretty(startDate)}</strong> to <strong>${formatPretty(endDate)}</strong><br>
           <span class="status-good">Available with caution</span><br>
-          Low quota dates: ${low.join(', ')}
+          Low quota dates: ${low.join(", ")}
         ` + toolbarHtml;
       } else {
         summaryBox.innerHTML = `
@@ -486,7 +551,7 @@
     }
 
     function wireToolbar() {
-      const resetBtn = document.getElementById('resetBtn');
+      const resetBtn = document.getElementById("resetBtn");
       if (resetBtn) resetBtn.onclick = resetSelection;
     }
 
@@ -495,8 +560,13 @@
       const proposedYear = nextDate.getFullYear();
       const proposedMonth = nextDate.getMonth();
 
-      const beforeMin = proposedYear < minYear || (proposedYear === minYear && proposedMonth < minMonth);
-      const afterMax = proposedYear > maxYear || (proposedYear === maxYear && proposedMonth > maxMonthStart);
+      const beforeMin =
+        proposedYear < minYear ||
+        (proposedYear === minYear && proposedMonth < minMonth);
+
+      const afterMax =
+        proposedYear > maxYear ||
+        (proposedYear === maxYear && proposedMonth > maxMonthStart);
 
       if (beforeMin || afterMax) return;
 
@@ -505,32 +575,39 @@
       renderVisibleMonths();
     }
 
-    prevBtn.addEventListener('click', () => shiftWindow(-1));
-    nextBtn.addEventListener('click', () => shiftWindow(1));
+    prevBtn.addEventListener("click", () => shiftWindow(-1));
+    nextBtn.addEventListener("click", () => shiftWindow(1));
 
     function applyQuotaData(data) {
       quotaData = {};
+
       data.forEach(row => {
-        if (row && row.date) {
-          const balance = Number(row.quotaBalance);
-          quotaData[row.date] = Number.isNaN(balance) ? 0 : balance;
+        if (row && row["Date"]) {
+          const dateKey = String(row["Date"]).trim();
+          const balance = Number(row["Quota Bal"]);
+          quotaData[dateKey] = Number.isNaN(balance) ? 0 : balance;
         }
       });
 
       allQuotaDates = Object.keys(quotaData).sort();
+
       if (allQuotaDates.length === 0) {
-        throw new Error('No valid date rows found in data.json');
+        throw new Error("No valid date rows found in data.json");
       }
 
-      const firstDate = new Date(allQuotaDates[0] + 'T00:00:00');
-      const lastDate = new Date(allQuotaDates[allQuotaDates.length - 1] + 'T00:00:00');
+      const firstDate = new Date(allQuotaDates[0] + "T00:00:00");
+      const lastDate = new Date(allQuotaDates[allQuotaDates.length - 1] + "T00:00:00");
 
       minYear = firstDate.getFullYear();
       minMonth = firstDate.getMonth();
       maxYear = lastDate.getFullYear();
-      maxMonthStart = lastDate.getMonth() === 0
-        ? 0
-        : new Date(lastDate.getFullYear(), lastDate.getMonth() - 1, 1).getMonth();
+
+      if (lastDate.getMonth() === 0) {
+        maxMonthStart = 0;
+      } else {
+        const monthBeforeLast = new Date(lastDate.getFullYear(), lastDate.getMonth() - 1, 1);
+        maxMonthStart = monthBeforeLast.getMonth();
+      }
 
       if (!hasLoadedOnce) {
         currentYear = minYear;
@@ -549,31 +626,32 @@
       isLoading = true;
 
       try {
-        const response = await fetch('data.json?_ts=' + Date.now(), { cache: 'no-store' });
+        const response = await fetch("data.json?_ts=" + Date.now(), { cache: "no-store" });
+
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
 
         const text = await response.text();
-        const nowText = 'Last checked: ' + new Date().toLocaleTimeString();
+        const nowText = "Last checked: " + new Date().toLocaleTimeString();
 
-        if (text === lastJsonText) {
-          setRefreshInfo(nowText + ' • No changes detected');
-          isLoading = false;
+        if (text === lastJsonText && hasLoadedOnce) {
+          setRefreshInfo(nowText + " • No changes detected");
           return;
         }
 
         const data = JSON.parse(text);
+
         if (!Array.isArray(data) || data.length === 0) {
-          throw new Error('data.json is empty or not an array');
+          throw new Error("data.json is empty or not an array");
         }
 
         lastJsonText = text;
         applyQuotaData(data);
-        setRefreshInfo(nowText + ' • Calendar updated');
+        setRefreshInfo(nowText + " • Calendar updated");
       } catch (error) {
         console.error(error);
-        showError('Failed to load data.json. Keep index.html and data.json in the same folder, run the local server from that folder, and refresh after exporting the latest JSON.');
+        showError("Failed to load data.json. Check that index.html and data.json are both in the repo root and that data.json contains valid JSON.");
       } finally {
         isLoading = false;
       }
@@ -581,6 +659,7 @@
 
     loadQuotaData();
     setInterval(loadQuotaData, 3000);
+    wireToolbar();
   </script>
 </body>
 </html>
